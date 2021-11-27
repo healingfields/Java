@@ -2,10 +2,11 @@ package ma.showMaker;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -13,6 +14,24 @@ public class Ecran extends JFrame {
     JPanel MyPanel;
     ArrayList<Circle> CirclesList = new ArrayList<Circle>();
     Timer clock;
+    public void initializeCircles(){
+        String chaine;
+        String fragements[];
+        try {
+            FileReader fr = new FileReader("/home/idriss/DevSection/Java/FormationTPs/TP5/src/savedCircles.txt");
+            BufferedReader br = new BufferedReader(fr);
+            do {
+                chaine = br.readLine();
+                if(chaine!=null) {
+                    fragements = chaine.split(" ");
+                    Circle c = new Circle(Integer.parseInt(fragements[0]), Integer.parseInt(fragements[1]), Integer.parseInt(fragements[4]), Integer.parseInt(fragements[2]), Integer.parseInt(fragements[3]), new Color(Integer.parseInt(fragements[5])));
+                    CirclesList.add(c);
+                }
+            } while (chaine!=null);
+        }catch(Exception ex){
+            System.out.println("failed");
+        }
+    }
 
     public Ecran() {
 
@@ -22,6 +41,7 @@ public class Ecran extends JFrame {
         this.setSize(x / 2, y / 2);
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        initializeCircles();
         MyPanel = new JPanel() {
             @Override
             public void paint(Graphics g) {
@@ -35,13 +55,14 @@ public class Ecran extends JFrame {
         };
         this.setContentPane(MyPanel);
 
+
         MyPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
                 System.out.println("clicked yaaaa!");
                 Random r = new Random();
-                for(int i = 0 ; i<50;i++){
+                for(int i = 0 ; i<5;i++){
                     int diameter = 10 + r.nextInt(50);
                     int dx = -20 + r.nextInt(40);
                     int dy = -20 + r.nextInt(40);
@@ -78,8 +99,26 @@ public class Ecran extends JFrame {
                 });
         clock.start();
         MyPanel.setBackground(Color.black);
+
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                try {
+                    FileWriter fw = new FileWriter("/home/idriss/DevSection/Java/FormationTPs/TP5/src/savedCircles.txt");
+                    PrintWriter pw = new PrintWriter(fw);
+                    for (Circle c : CirclesList) {
+                        pw.println(c.x + " " + c.y + " " + c.dx + " " + c.dy + " " + c.diameter + " " + c.color.getRGB());
+                    }
+                    pw.close();
+                    fw.close();
+                } catch (Exception ex) {
+                    System.out.println("cant save the file");
+                }
+            }
+        });
+
         this.setVisible(true);
-
-
     }
+
     }
